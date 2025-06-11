@@ -37,4 +37,14 @@ app.use(
     }),
 );
 
+app.get('/status', (_req: Request, res: Response): void => {
+    res.status(StatusCodes.OK).json({
+        success: true,
+        message: 'Server is up and running smoothly!',
+        uptime: process.uptime(),
+        memoryUsage: process.memoryUsage(),
+        timestamp: new Date().toISOString(),
+    });
+});
+
 export default app;
