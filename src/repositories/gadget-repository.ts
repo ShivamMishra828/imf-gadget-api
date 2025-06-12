@@ -17,6 +17,12 @@ class GadgetRepository {
         });
     }
 
+    async findById(id: string): Promise<Gadget | null> {
+        return await prisma.gadget.findUnique({
+            where: { id },
+        });
+    }
+
     async update(id: string, updateData: Prisma.GadgetUpdateInput): Promise<Gadget | null> {
         return await prisma.gadget.update({
             where: { id },
