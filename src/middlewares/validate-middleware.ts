@@ -5,10 +5,10 @@ import { StatusCodes } from 'http-status-codes';
 import AppError from '../utils/app-error';
 
 const validate =
-    (schema: AnyZodObject) =>
+    (schema: AnyZodObject, target: 'body' | 'params' | 'query' = 'body') =>
     async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
         try {
-            await schema.parseAsync(req.body);
+            await schema.parseAsync(req[target]);
             next();
         } catch (error) {
             if (error instanceof ZodError) {
