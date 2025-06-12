@@ -68,14 +68,14 @@ class UserService {
 
             if (!user) {
                 throw new AppError(
-                    'User with email address already does not exists, please use a different email or sign up',
+                    'User with this email address does not exists, please use a different email or sign up',
                     StatusCodes.NOT_FOUND,
                 );
             }
 
             const isPasswordCorrect: boolean = await comparePassword(
                 userData.password,
-                userData.password,
+                user.password,
             );
 
             if (!isPasswordCorrect) {
