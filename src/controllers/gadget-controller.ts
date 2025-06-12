@@ -67,3 +67,19 @@ export async function decommissionGadget(
         next(error);
     }
 }
+
+export async function selfDestructGadget(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> {
+    try {
+        const result = await gadgetService.triggerSelfDestruct(req.params.id);
+        res.status(StatusCodes.OK).json(
+            new SuccessResponse(result, 'Gadget destructed successfully'),
+        );
+    } catch (error) {
+        logger.error(`Failed to self destruct gadget: ${error}`);
+        next(error);
+    }
+}

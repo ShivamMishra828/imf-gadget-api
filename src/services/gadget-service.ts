@@ -3,7 +3,7 @@ import { Gadget, GadgetStatus } from '@prisma/client';
 import logger from '../config/logger-config';
 import AppError from '../utils/app-error';
 import { StatusCodes } from 'http-status-codes';
-import { generateUniqueNames } from '../utils/helper';
+import { generateConfirmationCode, generateUniqueNames } from '../utils/helper';
 
 class GadgetService {
     private gadgetRepository: GadgetRepository;
@@ -68,12 +68,16 @@ class GadgetService {
 
     async decommissionGadget(id: string): Promise<Gadget | null> {
         try {
-            const decommissionedGadget = await this.gadgetRepository.decommission(id);
-            if (!decommissionedGadget) {
+            const gadget = await this.gadgetRepository.findById(id);
+            if (!gadget) {
                 throw new AppError('Gadget not found', StatusCodes.NOT_FOUND);
             }
 
-            return decommissionedGadget;
+            if (gadget.status === 'Decommissioned') {
+                throw new AppError('Gadget is already decommissioned', StatusCodes.BAD_REQUEST);
+            }
+
+            return await this.gadgetRepository.decommission(id);
         } catch (error) {
             if (error instanceof AppError) {
                 logger.warn(`Error decommissioning gadget with ID ${id}: ${error.message}`);
@@ -82,6 +86,38 @@ class GadgetService {
                 logger.error(`Error decommissioning gadget: ${error}`);
                 throw new AppError(
                     'An unexpected error occurred while decommissioning the gadget.',
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                );
+            }
+        }
+    }
+
+    async triggerSelfDestruct(id: string) {
+        try {
+            const gadget = await this.gadgetRepository.findById(id);
+            if (!gadget) {
+                throw new AppError('Gadget not found', StatusCodes.NOT_FOUND);
+            }
+
+            if (gadget.status === 'Destroyed') {
+                throw new AppError('Gadget is already destroyed', StatusCodes.BAD_REQUEST);
+            }
+
+            const confirmationCode: string = generateConfirmationCode();
+            const destroyedGadget = await this.gadgetRepository.selfDestruct(id);
+
+            return {
+                ...destroyedGadget,
+                confirmationCode,
+            };
+        } catch (error) {
+            if (error instanceof AppError) {
+                logger.warn(`Error self destructing gadget with ID ${id}: ${error.message}`);
+                throw error;
+            } else {
+                logger.error(`Error self destructing gadget: ${error}`);
+                throw new AppError(
+                    'An unexpected error occurred while self destructing the gadget.',
                     StatusCodes.INTERNAL_SERVER_ERROR,
                 );
             }

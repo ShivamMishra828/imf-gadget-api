@@ -20,6 +20,6 @@ export const updateGadgetSchema = z.object({
     status: gadgetStatusEnum.optional(),
 });
 
-export const decommissionGadgetSchema = z.object({
+export const idParamSchema = z.object({
     id: z.string().uuid('Invalid gadget ID'),
 });

@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import ServerConfig from '../config/server-config';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
+import otpGenerator from 'otp-generator';
 
 export function hashPassword(userPassword: string): Promise<string> {
     return bcrypt.hash(userPassword, 10);
@@ -24,4 +25,12 @@ export function generateUniqueNames(): string {
         style: 'capital',
         length: 2,
     })}`;
+}
+
+export function generateConfirmationCode(): string {
+    return otpGenerator.generate(6, {
+        specialChars: false,
+        lowerCaseAlphabets: false,
+        upperCaseAlphabets: false,
+    });
 }
