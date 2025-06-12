@@ -13,3 +13,8 @@ export const createGadgetSchema = z.object({
 export const getAllGadgetsSchema = z.object({
     status: gadgetStatusEnum.optional(),
 });
+
+export const updateGadgetSchema = z.object({
+    name: z.string().max(255, 'Name is too long').optional(),
+    status: gadgetStatusEnum.optional(),
+});

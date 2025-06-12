@@ -42,6 +42,29 @@ class GadgetService {
             );
         }
     }
+
+    async updateGadget(id: string, updates: Partial<Gadget>): Promise<Gadget | null> {
+        try {
+            const updatedGadget = await this.gadgetRepository.update(id, updates);
+
+            if (!updatedGadget) {
+                throw new AppError('Gadget not found', StatusCodes.NOT_FOUND);
+            }
+
+            return updatedGadget;
+        } catch (error) {
+            if (error instanceof AppError) {
+                logger.warn(`Error updating gadget with ID ${id}: ${error.message}`);
+                throw error;
+            } else {
+                logger.error(`Error updating gadget: ${error}`);
+                throw new AppError(
+                    'Unable to update gadget. Please try again later',
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                );
+            }
+        }
+    }
 }
 
 export default GadgetService;

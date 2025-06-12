@@ -39,3 +39,14 @@ export async function getAllGadgets(
         next(error);
     }
 }
+
+export async function updateGadget(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        const gadget = await gadgetService.updateGadget(req.params.id, req.body);
+
+        res.status(StatusCodes.OK).json(new SuccessResponse(gadget, 'Gadget updated successfully'));
+    } catch (error) {
+        logger.error(`Failed to update gadget: ${error}`);
+        next(error);
+    }
+}
