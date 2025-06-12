@@ -22,3 +22,18 @@ export async function signUp(req: Request, res: Response, next: NextFunction): P
         next(error);
     }
 }
+
+export async function signIn(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        const { email, password } = req.body;
+
+        const { user, token } = await userService.signIn({ email, password });
+
+        res.cookie('token', token)
+            .status(StatusCodes.OK)
+            .json(new SuccessResponse({ user, token }, 'User successfully logged in'));
+    } catch (error) {
+        logger.error(`Error during user sign-in in controller: ${error}`);
+        next(error);
+    }
+}
