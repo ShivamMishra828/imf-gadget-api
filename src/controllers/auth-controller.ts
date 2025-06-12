@@ -37,3 +37,14 @@ export async function signIn(req: Request, res: Response, next: NextFunction): P
         next(error);
     }
 }
+
+export async function signOut(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        res.clearCookie('token')
+            .status(StatusCodes.OK)
+            .json(new SuccessResponse(null, 'User successfully logged out'));
+    } catch (error) {
+        logger.error(`Error during user sign-out in controller: ${error}`);
+        next(error);
+    }
+}

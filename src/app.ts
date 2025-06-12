@@ -8,6 +8,7 @@ import helmet from 'helmet';
 import requestLogger from './middlewares/request-logger-middleware';
 import globalErrorHandler from './middlewares/global-error-handler';
 import apiRoutes from './routes';
+import cookieParser from 'cookie-parser';
 
 const app: Express = express();
 
@@ -31,6 +32,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(limiter);
 app.use(helmet());
 app.use(requestLogger);
+app.use(cookieParser());
 app.use(
     cors({
         origin: ServerConfig.CORS_ORIGIN,
