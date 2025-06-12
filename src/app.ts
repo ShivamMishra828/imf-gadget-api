@@ -7,6 +7,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import requestLogger from './middlewares/request-logger-middleware';
 import globalErrorHandler from './middlewares/global-error-handler';
+import apiRoutes from './routes';
 
 const app: Express = express();
 
@@ -47,6 +48,8 @@ app.get('/status', (_req: Request, res: Response): void => {
         timestamp: new Date().toISOString(),
     });
 });
+
+app.use('/api', apiRoutes);
 
 app.use(globalErrorHandler);
 
