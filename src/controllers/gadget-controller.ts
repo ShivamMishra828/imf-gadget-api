@@ -50,3 +50,20 @@ export async function updateGadget(req: Request, res: Response, next: NextFuncti
         next(error);
     }
 }
+
+export async function decommissionGadget(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> {
+    try {
+        const gadget = await gadgetService.decommissionGadget(req.params.id);
+
+        res.status(StatusCodes.OK).json(
+            new SuccessResponse(gadget, 'Gadget decommission successfully'),
+        );
+    } catch (error) {
+        logger.error(`Failed to decommission gadget: ${error}`);
+        next(error);
+    }
+}

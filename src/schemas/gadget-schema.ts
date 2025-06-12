@@ -16,5 +16,10 @@ export const getAllGadgetsSchema = z.object({
 
 export const updateGadgetSchema = z.object({
     name: z.string().max(255, 'Name is too long').optional(),
+    id: z.string().uuid('Invalid gadget ID'),
     status: gadgetStatusEnum.optional(),
+});
+
+export const decommissionGadgetSchema = z.object({
+    id: z.string().uuid('Invalid gadget ID'),
 });

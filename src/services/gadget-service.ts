@@ -20,7 +20,7 @@ class GadgetService {
         } catch (error) {
             logger.error('Failed to create Gadget', error);
             throw new AppError(
-                'Unable to create Gadget. Please try again later',
+                'An unexpected error occurred while creating the gadget.',
                 StatusCodes.INTERNAL_SERVER_ERROR,
             );
         }
@@ -59,7 +59,29 @@ class GadgetService {
             } else {
                 logger.error(`Error updating gadget: ${error}`);
                 throw new AppError(
-                    'Unable to update gadget. Please try again later',
+                    'An unexpected error occurred while updating the gadget.',
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                );
+            }
+        }
+    }
+
+    async decommissionGadget(id: string): Promise<Gadget | null> {
+        try {
+            const decommissionedGadget = await this.gadgetRepository.decommission(id);
+            if (!decommissionedGadget) {
+                throw new AppError('Gadget not found', StatusCodes.NOT_FOUND);
+            }
+
+            return decommissionedGadget;
+        } catch (error) {
+            if (error instanceof AppError) {
+                logger.warn(`Error decommissioning gadget with ID ${id}: ${error.message}`);
+                throw error;
+            } else {
+                logger.error(`Error decommissioning gadget: ${error}`);
+                throw new AppError(
+                    'An unexpected error occurred while decommissioning the gadget.',
                     StatusCodes.INTERNAL_SERVER_ERROR,
                 );
             }
