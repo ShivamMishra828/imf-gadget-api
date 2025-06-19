@@ -14,3 +14,20 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+enum GadgetStatus {
+  Available
+  Deployed
+  Destroyed
+  Decommissioned
+}
+
+model Gadget {
+  id               String       @id @default(uuid()) @db.Uuid
+  name             String
+  codename         String       @unique
+  status           GadgetStatus @default(Available)
+  decommissionedAt DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
