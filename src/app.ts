@@ -7,6 +7,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import requestLogger from './middlewares/request-logger-middleware';
 import cookieParser from 'cookie-parser';
+import globalErrorHandler from './middlewares/global-error-handler';
 
 /**
  * @constant app
@@ -91,5 +92,8 @@ app.get('/status', (_req: Request, res: Response): void => {
         timestamp: new Date().toISOString(),
     });
 });
+
+// Global error handling middleware.
+app.use(globalErrorHandler);
 
 export default app;
