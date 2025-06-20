@@ -1,0 +1,49 @@
+import { Request, Response, NextFunction } from 'express';
+import UserRepository from '../repositories/user-repository';
+import UserService from '../services/auth-service';
+import logger from '../config/logger-config';
+import { StatusCodes } from 'http-status-codes';
+import { SuccessResponse } from '../utils/responses';
+
+// Instantiate the UserRepository. This will interact directly with the database.
+const userRepository = new UserRepository();
+
+// Instantiate the UserService, injecting the userRepository.
+const userService = new UserService(userRepository);
+
+/**
+ * @async
+ * @function signUp
+ * @description Handles the user signup API request.
+ * This controller function receives signup data, delegates the business logic to the `UserService`,
+ * and sends an appropriate HTTP response back to the client.
+ * It acts as an entry point for the signup process, orchestrating the flow.
+ *
+ * @param {Request} req - The Express request object, containing the request body (email, password).
+ * @param {Response} res - The Express response object, used to send the API response.
+ * @param {NextFunction} next - The Express next middleware function, used to pass errors to the global error handler.
+ * @returns {Promise<void>} A Promise that resolves when the response is sent or error is passed.
+ */
+export async function signUp(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        // Destructure email and password from the request body.
+        const { email, password } = req.body;
+
+        // Delegate the signup business logic to the UserService.
+        const user = await userService.signUp({ email, password });
+
+        // If signup is successful, send a 201 Created status code with a success response.
+        res.status(StatusCodes.CREATED).json(
+            new SuccessResponse(user, 'User successfully registered'),
+        );
+    } catch (error) {
+        // If an error occurs during the signup process (e.g., email already exists, unexpected server error),
+        logger.error(
+            `[Auth-Controller] Error during user signup for email '${req.body.email}':`,
+            error,
+        );
+
+        // Pass the error to the next error-handling middleware.
+        next(error);
+    }
+}
