@@ -2,6 +2,7 @@ import http from 'http';
 import logger from './config/logger-config';
 import app from './app';
 import ServerConfig from './config/server-config';
+import prisma from './config/prisma-client';
 
 // Declare a variable to hold the HTTP server instance.
 let server: http.Server | null = null;
@@ -40,6 +41,11 @@ async function startServer(): Promise<void> {
  */
 async function shutdownServer(signal?: string): Promise<void> {
     logger.info(`[SERVER] Initiating server shutdown. Received signal: ${signal || 'N/A'}`);
+
+    // Disconnect Prisma client from the database to ensure all pending operations are completed
+    logger.info('[SERVER] Disconnecting Prisma Database Connection...');
+    await prisma.$disconnect();
+    logger.info('[SERVER] Prisma Database Connection disconnected.');
 
     // Check if the server instance exists (i.e., if the server was successfully started).
     if (server) {
