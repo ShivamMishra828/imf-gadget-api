@@ -1,5 +1,5 @@
 import { AnyZodObject, ZodError, ZodIssue } from 'zod';
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import logger from '../config/logger-config';
 import { StatusCodes } from 'http-status-codes';
 import AppError from '../utils/app-error';
@@ -9,7 +9,7 @@ import AppError from '../utils/app-error';
  * @description Defines the possible locations within an Express request to validate against a Zod schema.
  * This allows the middleware to validate data coming from the request body, URL parameters, or query strings.
  */
-type ValidationTarget = 'body' | 'params' | 'query';
+type ValidationTarget = keyof Pick<Request, 'body' | 'params' | 'query'>;
 
 /**
  * @function validate
@@ -24,7 +24,7 @@ type ValidationTarget = 'body' | 'params' | 'query';
  * @returns {Function} An asynchronous Express middleware function.
  */
 const validate =
-    (schema: AnyZodObject, target: ValidationTarget = 'body'): Function =>
+    (schema: AnyZodObject, target: ValidationTarget = 'body'): RequestHandler =>
     async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
         try {
             // Attempt to parse and validate the specified part of the request (e.g., req.body) against the schema.

@@ -8,6 +8,7 @@ import helmet from 'helmet';
 import requestLogger from './middlewares/request-logger-middleware';
 import cookieParser from 'cookie-parser';
 import globalErrorHandler from './middlewares/global-error-handler';
+import apiRoutes from './routes';
 
 /**
  * @constant app
@@ -92,6 +93,9 @@ app.get('/status', (_req: Request, res: Response): void => {
         timestamp: new Date().toISOString(),
     });
 });
+
+// Mount the main API routes under the '/api' prefix.
+app.use('/api', apiRoutes);
 
 // Global error handling middleware.
 app.use(globalErrorHandler);
