@@ -1,7 +1,7 @@
 import express, { Router } from 'express';
 import validate from '../../middlewares/validate-middleware';
 import UserSchema from '../../schemas/auth-schema';
-import { signUp } from '../../controllers/auth-controller';
+import { signUp, signIn } from '../../controllers/auth-controller';
 
 /**
  * @constant router
@@ -17,5 +17,12 @@ const router: Router = express.Router();
  * This endpoint allows clients to create a new user account.
  */
 router.post('/signup', validate(UserSchema, 'body'), signUp);
+
+/**
+ * @route POST /api/v1/auth/signin
+ * @description Defines the route for existing user login.
+ * This endpoint allows clients to authenticate and receive an access token (via HTTP-only cookie).
+ */
+router.post('/signin', validate(UserSchema), signIn);
 
 export default router;
