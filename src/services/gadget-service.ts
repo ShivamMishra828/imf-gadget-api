@@ -1,5 +1,5 @@
 import GadgetRepository from '../repositories/gadget-repository';
-import { Gadget } from '@prisma/client';
+import { Gadget, GadgetStatus } from '@prisma/client';
 import logger from '../config/logger-config';
 import AppError from '../utils/app-error';
 import { StatusCodes } from 'http-status-codes';
@@ -47,8 +47,45 @@ class GadgetService {
                 error,
             );
 
+            // Throw a generic server error to the client to avoid exposing internal details.
             throw new AppError(
                 'An unexpected error occurred while creating the gadget. Please try again later.',
+                StatusCodes.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+    /**
+     * @async
+     * @method getAllGadgets
+     * @description Retrieves a list of all gadgets, with an optional filter by status.
+     * For each gadget, it calculates and adds a simulated "mission success probability."
+     * This method demonstrates fetching data and augmenting it with derived information.
+     * @param {GadgetStatus} [status] - Optional. The status to filter gadgets by (e.g., 'Available', 'Decommissioned').
+     * @returns {Promise<Gadget[]>} A Promise that resolves to an array of `Gadget` objects,
+     * each augmented with a `missionSuccessProbability` string.
+     * @throws {AppError} If an unexpected error occurs during fetching.
+     */
+    async getAllGadgets(status?: GadgetStatus): Promise<Gadget[]> {
+        try {
+            // Step 1: Fetch gadgets from the repository, optionally filtered by status.
+            const gadgets = await this.gadgetRepository.findAll(status);
+
+            // Step 2: Augment each gadget with a simulated 'missionSuccessProbability'.
+            return gadgets.map((gadget) => ({
+                ...gadget,
+                missionSuccessProbability: `${gadget.codename} - ${Math.floor(Math.random() * 101)}% success probability`,
+            }));
+        } catch (error) {
+            // Catch any errors during the fetching process.
+            logger.error(
+                `[Gadget-Service] Failed to get gadgets list with status "${status || 'any'}". Unexpected error:`,
+                error,
+            );
+
+            // Throw a generic server error to the client to avoid exposing internal details.
+            throw new AppError(
+                'An unexpected error occurred during gadget fetching. Please try again later.',
                 StatusCodes.INTERNAL_SERVER_ERROR,
             );
         }

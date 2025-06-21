@@ -1,7 +1,7 @@
 import express, { Router } from 'express';
 import validate from '../../middlewares/validate-middleware';
-import { createGadgetSchema } from '../../schemas/gadget-schema';
-import { createGadget } from '../../controllers/gadget-controller';
+import { createGadgetSchema, getAllGadgetsSchema } from '../../schemas/gadget-schema';
+import { createGadget, getAllGadgets } from '../../controllers/gadget-controller';
 import verifyJwtToken from '../../middlewares/auth-middleware';
 
 /**
@@ -26,5 +26,12 @@ router.use(verifyJwtToken);
  * This endpoint allows an authenticated user to register a new gadget.
  */
 router.post('/', validate(createGadgetSchema), createGadget);
+
+/**
+ * @route GET /api/v1/gadgets/
+ * @description Defines the route for fetching a list of all gadgets.
+ * This endpoint allows an authenticated user to retrieve gadget details, optionally filtered by status.
+ */
+router.get('/', validate(getAllGadgetsSchema, 'query'), getAllGadgets);
 
 export default router;
