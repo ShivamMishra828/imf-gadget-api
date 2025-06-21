@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import ServerConfig from '../config/server-config';
+import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
 
 /**
  * @function hashPassword
@@ -39,4 +40,19 @@ export function generateToken(userId: string): string {
     return jwt.sign({ id: userId }, ServerConfig.JWT_SECRET, {
         expiresIn: '1d',
     });
+}
+
+/**
+ * @function generateUniqueNames
+ * @description Generates a unique, human-readable codename for a gadget using a dictionary of adjectives and animals.
+ * This ensures that each gadget has a distinct and memorable identifier.
+ * @returns {string} A string representing a unique codename (e.g., "The Stealthy Fox", "The Swift Eagle").
+ */
+export function generateUniqueNames(): string {
+    return `The ${uniqueNamesGenerator({
+        dictionaries: [adjectives, animals],
+        separator: ' ',
+        style: 'capital',
+        length: 2,
+    })}`;
 }
