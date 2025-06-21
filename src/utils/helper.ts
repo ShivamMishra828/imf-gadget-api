@@ -1,6 +1,8 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import ServerConfig from '../config/server-config';
+import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
+import otpGenerator from 'otp-generator';
 
 /**
  * @function hashPassword
@@ -38,5 +40,34 @@ export function comparePassword(inputPassword: string, hashedPassword: string): 
 export function generateToken(userId: string): string {
     return jwt.sign({ id: userId }, ServerConfig.JWT_SECRET, {
         expiresIn: '1d',
+    });
+}
+
+/**
+ * @function generateUniqueNames
+ * @description Generates a unique, human-readable codename for a gadget using a dictionary of adjectives and animals.
+ * This ensures that each gadget has a distinct and memorable identifier.
+ * @returns {string} A string representing a unique codename (e.g., "The Stealthy Fox", "The Swift Eagle").
+ */
+export function generateUniqueNames(): string {
+    return `The ${uniqueNamesGenerator({
+        dictionaries: [adjectives, animals],
+        separator: ' ',
+        style: 'capital',
+        length: 2,
+    })}`;
+}
+
+/**
+ * @function generateConfirmationCode
+ * @description Generates a 6-digit numeric confirmation code.
+ * This is useful for sensitive operations requiring a temporary, one-time code.
+ * @returns {string} A 6-character string composed of digits.
+ */
+export function generateConfirmationCode(): string {
+    return otpGenerator.generate(6, {
+        specialChars: false,
+        lowerCaseAlphabets: false,
+        upperCaseAlphabets: false,
     });
 }
