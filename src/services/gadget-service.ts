@@ -146,6 +146,63 @@ class GadgetService {
             }
         }
     }
+
+    /**
+     * @async
+     * @method decommissionGadget
+     * @description Handles the decommissioning of a gadget by its ID.
+     * This involves setting its status to 'Decommissioned'. It first verifies
+     * the gadget's existence and ensures it's not already decommissioned.
+     * @param {string} id - The unique identifier (UUID) of the gadget to decommission.
+     * @returns {Promise<Gadget>} A Promise that resolves to the decommissioned `Gadget` object.
+     * @throws {AppError} If the gadget is not found (`StatusCodes.NOT_FOUND`),
+     * if the gadget is already decommissioned (`StatusCodes.BAD_REQUEST`), or if an unexpected server error occurs.
+     */
+    async decommissionGadget(id: string): Promise<Gadget | null> {
+        try {
+            // Step 1: Fetch the existing gadget to verify its existence and current status.
+            const gadget = await this.gadgetRepository.findById(id);
+
+            // Step 2: Check if the gadget exists. If not, throw a NOT_FOUND error.
+            if (!gadget) {
+                throw new AppError(
+                    'Gadget not found. Cannot decommission a non-existent gadget.',
+                    StatusCodes.NOT_FOUND,
+                );
+            }
+
+            // Step 3: Check if the gadget is already decommissioned to prevent redundant operations.
+            if (gadget.status === 'Decommissioned') {
+                throw new AppError(
+                    'Gadget is already decommissioned. No update necessary.',
+                    StatusCodes.BAD_REQUEST,
+                );
+            }
+
+            // Step 4: If all checks pass, proceed to decommission the gadget via the repository.
+            return await this.gadgetRepository.decommission(id);
+        } catch (error) {
+            if (error instanceof AppError) {
+                // If it's an AppError, rethrow it as it's an operational error
+                logger.warn(
+                    `[Gadget-Service] Operational error decommissioning gadget with ID '${id}': ${error.message}`,
+                );
+                throw error;
+            } else {
+                // For any other unexpected errors (e.g., database issues):
+                logger.error(
+                    `[Gadget-Service] An unexpected critical error occurred while decommissioning gadget with ID '${id}':`,
+                    error,
+                );
+
+                // Throw a generic 500 error to the client to avoid exposing internal details.
+                throw new AppError(
+                    'An unexpected error occurred while decommissioning the gadget.',
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                );
+            }
+        }
+    }
 }
 
 export default GadgetService;

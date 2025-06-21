@@ -124,3 +124,44 @@ export async function updateGadget(req: Request, res: Response, next: NextFuncti
         next(error);
     }
 }
+
+/**
+ * @async
+ * @function decommissionGadget
+ * @description Handles the API request to decommission a gadget by its ID.
+ * This effectively marks the gadget as 'Decommissioned' in the system.
+ * It extracts the gadget ID from URL parameters, delegates the logic
+ * to the `GadgetService`, and sends an appropriate HTTP response.
+ *
+ * @param {Request} req - The Express request object, containing URL parameters (`id`).
+ * @param {Response} res - The Express response object, used to send the API response.
+ * @param {NextFunction} next - The Express next middleware function, used to pass errors to the global error handler.
+ * @returns {Promise<void>} A Promise that resolves when the response is sent or error is passed.
+ */
+export async function decommissionGadget(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> {
+    try {
+        // Extract the gadget ID from URL parameters.
+        const { id } = req.params;
+
+        // Delegate the gadget decommissioning business logic to the GadgetService.
+        const gadget = await gadgetService.decommissionGadget(id);
+
+        // If the gadget is successfully decommissioned, send a 200 OK status code with a success response.
+        res.status(StatusCodes.OK).json(
+            new SuccessResponse(gadget, 'Gadget decommissioned successfully.'),
+        );
+    } catch (error) {
+        // If an error occurs during the gadget decommissioning process,
+        logger.error(
+            `[Gadget-Controller] Failed to decommission gadget with ID '${req.params.id}':`,
+            error,
+        );
+
+        // Pass the error to the next error-handling middleware.
+        next(error);
+    }
+}

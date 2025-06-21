@@ -45,3 +45,13 @@ export const updateGadgetSchema = z.object({
     id: z.string().uuid('Invalid gadget ID format.'),
     status: gadgetStatusEnum.optional(),
 });
+
+/**
+ * @constant idParamSchema
+ * @description Defines a simple validation schema for a UUID `id` parameter
+ * found in URL paths (e.g., `/gadgets/:id`). This schema is reusable for endpoints
+ * that only require a valid ID without other body/query parameters.
+ */
+export const idParamSchema = z.object({
+    id: z.string().uuid('Invalid gadget ID format.'),
+});

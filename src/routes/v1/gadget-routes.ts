@@ -4,8 +4,14 @@ import {
     createGadgetSchema,
     getAllGadgetsSchema,
     updateGadgetSchema,
+    idParamSchema,
 } from '../../schemas/gadget-schema';
-import { createGadget, getAllGadgets, updateGadget } from '../../controllers/gadget-controller';
+import {
+    createGadget,
+    getAllGadgets,
+    updateGadget,
+    decommissionGadget,
+} from '../../controllers/gadget-controller';
 import verifyJwtToken from '../../middlewares/auth-middleware';
 
 /**
@@ -49,5 +55,12 @@ router.patch(
     validate(updateGadgetSchema, 'body'),
     updateGadget,
 );
+
+/**
+ * @route DELETE /api/v1/gadgets/:id
+ * @description Defines the route for decommissioning (soft-deleting) a gadget by its ID.
+ * This endpoint allows an authenticated user to mark a gadget as 'Decommissioned'.
+ */
+router.delete('/:id', validate(idParamSchema, 'params'), decommissionGadget);
 
 export default router;
