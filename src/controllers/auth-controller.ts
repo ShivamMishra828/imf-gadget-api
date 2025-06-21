@@ -89,3 +89,32 @@ export async function signIn(req: Request, res: Response, next: NextFunction): P
         next(error);
     }
 }
+
+/**
+ * @async
+ * @function signOut
+ * @description Handles the user sign-out (logout) API request.
+ * This controller function clears the authentication token from the client's cookies,
+ * effectively logging the user out. It doesn't require any business logic delegation
+ * as it only manipulates the client's cookie.
+ *
+ * @param {Request} _req - The Express request object (prefixed with `_` as it's not used).
+ * @param {Response} res - The Express response object, used to clear cookies and send the API response.
+ * @param {NextFunction} next - The Express next middleware function, used to pass errors to the global error handler.
+ * @returns {Promise<void>} A Promise that resolves when the response is sent or error is passed.
+ */
+export async function signOut(_req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        // Clear the 'token' cookie from the client's browser.
+        res.clearCookie('token')
+            // Send a 200 OK status code with a success response.
+            .status(StatusCodes.OK)
+            .json(new SuccessResponse(null, 'User successfully logged out.'));
+    } catch (error) {
+        // If an unexpected error occurs during the cookie clearing process,
+        logger.error(`[Auth-Controller] Error during user sign-out:`, error);
+
+        // Pass the error to the next error-handling middleware.
+        next(error);
+    }
+}

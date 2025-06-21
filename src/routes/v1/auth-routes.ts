@@ -1,7 +1,8 @@
 import express, { Router } from 'express';
 import validate from '../../middlewares/validate-middleware';
 import UserSchema from '../../schemas/auth-schema';
-import { signUp, signIn } from '../../controllers/auth-controller';
+import { signUp, signIn, signOut } from '../../controllers/auth-controller';
+import verifyJwtToken from '../../middlewares/auth-middleware';
 
 /**
  * @constant router
@@ -24,5 +25,13 @@ router.post('/signup', validate(UserSchema, 'body'), signUp);
  * This endpoint allows clients to authenticate and receive an access token (via HTTP-only cookie).
  */
 router.post('/signin', validate(UserSchema), signIn);
+
+/**
+ * @route GET /api/v1/auth/logout
+ * @description Defines the route for user logout.
+ * This endpoint allows authenticated clients to clear their authentication token cookie,
+ * effectively ending their session.
+ */
+router.get('/logout', verifyJwtToken, signOut);
 
 export default router;
