@@ -1,7 +1,11 @@
 import express, { Router } from 'express';
 import validate from '../../middlewares/validate-middleware';
-import { createGadgetSchema, getAllGadgetsSchema } from '../../schemas/gadget-schema';
-import { createGadget, getAllGadgets } from '../../controllers/gadget-controller';
+import {
+    createGadgetSchema,
+    getAllGadgetsSchema,
+    updateGadgetSchema,
+} from '../../schemas/gadget-schema';
+import { createGadget, getAllGadgets, updateGadget } from '../../controllers/gadget-controller';
 import verifyJwtToken from '../../middlewares/auth-middleware';
 
 /**
@@ -33,5 +37,17 @@ router.post('/', validate(createGadgetSchema), createGadget);
  * This endpoint allows an authenticated user to retrieve gadget details, optionally filtered by status.
  */
 router.get('/', validate(getAllGadgetsSchema, 'query'), getAllGadgets);
+
+/**
+ * @route PATCH /api/v1/gadgets/:id
+ * @description Defines the route for partially updating an existing gadget by its ID.
+ * This endpoint allows an authenticated user to modify specific fields of a gadget.
+ */
+router.patch(
+    '/:id',
+    validate(updateGadgetSchema, 'params'),
+    validate(updateGadgetSchema, 'body'),
+    updateGadget,
+);
 
 export default router;

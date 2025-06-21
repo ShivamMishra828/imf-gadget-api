@@ -33,3 +33,15 @@ export const createGadgetSchema = z.object({
 export const getAllGadgetsSchema = z.object({
     status: gadgetStatusEnum.optional(),
 });
+
+/**
+ * @constant updateGadgetSchema
+ * @description Defines the validation schema for updating an existing gadget.
+ * This schema supports partial updates (meaning not all fields are required)
+ * and includes validation for the gadget's ID and potential update fields like name and status.
+ */
+export const updateGadgetSchema = z.object({
+    name: z.string().max(255, 'Name is too long.').optional(),
+    id: z.string().uuid('Invalid gadget ID format.'),
+    status: gadgetStatusEnum.optional(),
+});

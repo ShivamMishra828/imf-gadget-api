@@ -90,6 +90,62 @@ class GadgetService {
             );
         }
     }
+
+    /**
+     * @async
+     * @method updateGadget
+     * @description Handles updating an existing gadget by its ID.
+     * It first verifies the gadget's existence and then checks if the status update is redundant.
+     * Finally, it applies the partial updates to the gadget record in the database.
+     * @param {string} id - The unique identifier (UUID) of the gadget to update.
+     * @param {Partial<Gadget>} updates - An object containing the fields to update (e.g., `name`, `status`).
+     * `Partial<Gadget>` ensures that only allowed fields are passed.
+     * @returns {Promise<Gadget>} A Promise that resolves to the updated `Gadget` object.
+     * @throws {AppError} If the gadget is not found (`StatusCodes.NOT_FOUND`),
+     * if the status update is redundant (`StatusCodes.BAD_REQUEST`), or if an unexpected server error occurs.
+     */
+    async updateGadget(id: string, updates: Partial<Gadget>): Promise<Gadget | null> {
+        try {
+            // Step 1: Fetch the existing gadget to verify its existence and current state.
+            const existingGadget = await this.gadgetRepository.findById(id);
+
+            // Step 2: Check if the gadget exists. If not, throw a NOT_FOUND error.
+            if (!existingGadget) {
+                throw new AppError('Gadget not found', StatusCodes.NOT_FOUND);
+            }
+
+            // Step 3: If a status update is requested, check if the gadget already has that status.
+            if (updates.status && updates.status === existingGadget.status) {
+                throw new AppError(
+                    `Gadget already has status '${updates.status}'. No update necessary.`,
+                    StatusCodes.BAD_REQUEST,
+                );
+            }
+
+            // Step 4: If all checks pass, proceed to update the gadget in the database.
+            return await this.gadgetRepository.update(id, updates);
+        } catch (error) {
+            if (error instanceof AppError) {
+                // If it's an AppError, rethrow it as it's an operational error
+                logger.warn(
+                    `[Gadget-Service] Operational error updating gadget with ID '${id}': ${error.message}`,
+                );
+                throw error;
+            } else {
+                // For any other unexpected errors (e.g., database connection issues, internal server errors):
+                logger.error(
+                    `Gadget-Service: An unexpected error occurred while updating gadget with ID "${id}":`,
+                    error,
+                );
+
+                // Throw a generic 500 error to the client to avoid exposing internal details.
+                throw new AppError(
+                    'An unexpected error occurred while updating the gadget.',
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                );
+            }
+        }
+    }
 }
 
 export default GadgetService;

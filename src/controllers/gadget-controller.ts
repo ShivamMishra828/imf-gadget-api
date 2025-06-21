@@ -87,3 +87,40 @@ export async function getAllGadgets(
         next(error);
     }
 }
+
+/**
+ * @async
+ * @function updateGadget
+ * @description Handles the API request for updating an existing gadget.
+ * It extracts the gadget ID from URL parameters and update fields from the request body.
+ * Delegates the update logic to the `GadgetService` and sends an appropriate HTTP response.
+ *
+ * @param {Request} req - The Express request object, containing URL parameters (`id`) and request body (`updates`).
+ * @param {Response} res - The Express response object, used to send the API response.
+ * @param {NextFunction} next - The Express next middleware function, used to pass errors to the global error handler.
+ * @returns {Promise<void>} A Promise that resolves when the response is sent or error is passed.
+ */
+export async function updateGadget(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        // Extract the gadget ID from URL parameters.
+        const { id } = req.params;
+
+        // Extract the update fields from the request body.
+        const updates = req.body;
+
+        // Delegate the gadget update business logic to the GadgetService.logger.info(`[Gadget-Controller] Update gadget request received for ID: '${id}'. Updates: ${JSON.stringify(updates)}`);
+        const gadget = await gadgetService.updateGadget(id, updates);
+
+        // If the gadget is successfully updated, send a 200 OK status code with a success response.
+        res.status(StatusCodes.OK).json(new SuccessResponse(gadget, 'Gadget updated successfully'));
+    } catch (error) {
+        // If an error occurs during the gadget update process (e.g., gadget not found, validation error, unexpected error),
+        logger.error(
+            `[Gadget-Controller] Failed to update gadget with ID '${req.params.id}':`,
+            error,
+        );
+
+        // Pass the error to the next error-handling middleware.
+        next(error);
+    }
+}
