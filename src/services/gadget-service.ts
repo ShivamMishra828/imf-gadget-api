@@ -3,7 +3,16 @@ import { Gadget, GadgetStatus } from '@prisma/client';
 import logger from '../config/logger-config';
 import AppError from '../utils/app-error';
 import { StatusCodes } from 'http-status-codes';
-import { generateUniqueNames } from '../utils/helper';
+import { generateUniqueNames, generateConfirmationCode } from '../utils/helper';
+
+/**
+ * @interface SelfDestructResult
+ * @description Defines the structure of the response after a gadget's self-destruct operation.
+ * It includes the `Gadget` object (now in a 'Destroyed' state) and the `confirmationCode` generated.
+ */
+interface SelfDestructResult extends Gadget {
+    confirmationCode: string;
+}
 
 /**
  * @class GadgetService
@@ -198,6 +207,73 @@ class GadgetService {
                 // Throw a generic 500 error to the client to avoid exposing internal details.
                 throw new AppError(
                     'An unexpected error occurred while decommissioning the gadget.',
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                );
+            }
+        }
+    }
+
+    /**
+     * @async
+     * @method triggerSelfDestruct
+     * @description Initiates the self-destruct sequence for a gadget by its ID.
+     * This marks the gadget's status as 'Destroyed' and generates a confirmation code.
+     * It performs checks to ensure the gadget exists and is not already destroyed.
+     * @param {string} id - The unique identifier (UUID) of the gadget to self-destruct.
+     * @returns {Promise<SelfDestructResult>} A Promise that resolves to an object containing the
+     * destroyed `Gadget` data and the generated `confirmationCode`.
+     * @throws {AppError} If the gadget is not found (`StatusCodes.NOT_FOUND`),
+     * if the gadget is already destroyed (`StatusCodes.BAD_REQUEST`), or if an unexpected server error occurs.
+     */
+    async triggerSelfDestruct(id: string): Promise<SelfDestructResult> {
+        try {
+            // Step 1: Fetch the existing gadget to verify its existence and current status.
+            const gadget = await this.gadgetRepository.findById(id);
+
+            // Step 2: Check if the gadget exists. If not, throw a NOT_FOUND error.
+            if (!gadget) {
+                throw new AppError(
+                    'Gadget not found. Cannot self-destruct a non-existent gadget.',
+                    StatusCodes.NOT_FOUND,
+                );
+            }
+
+            // Step 3: Check if the gadget is already in a 'Destroyed' state to prevent redundant operations.
+            if (gadget.status === 'Destroyed') {
+                throw new AppError(
+                    'Gadget is already destroyed. Self-destruct not necessary.',
+                    StatusCodes.BAD_REQUEST,
+                );
+            }
+
+            // Step 4: Generate a unique confirmation code for this destruction event.
+            const confirmationCode: string = generateConfirmationCode();
+
+            // Step 5: Proceed to destroy the gadget via the repository.
+            const destroyedGadget = await this.gadgetRepository.selfDestruct(id);
+
+            // Step 6: Return the destroyed gadget object along with the generated confirmation code.
+            return {
+                ...destroyedGadget!,
+                confirmationCode,
+            };
+        } catch (error) {
+            if (error instanceof AppError) {
+                // If it's an AppError, rethrow it as it's an operational error
+                logger.warn(
+                    `[Gadget-Service] Operational error self-destructing gadget with ID '${id}': ${error.message}`,
+                );
+                throw error;
+            } else {
+                // For any other unexpected errors (e.g., database issues, network problems):
+                logger.error(
+                    `[Gadget-Service] An unexpected critical error occurred while self-destructing gadget with ID '${id}':`,
+                    error,
+                );
+
+                // Throw a generic 500 error to the client to avoid exposing internal details.
+                throw new AppError(
+                    'An unexpected server error occurred while self-destructing the gadget. Please try again later.',
                     StatusCodes.INTERNAL_SERVER_ERROR,
                 );
             }

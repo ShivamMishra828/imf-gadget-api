@@ -11,6 +11,7 @@ import {
     getAllGadgets,
     updateGadget,
     decommissionGadget,
+    selfDestructGadget,
 } from '../../controllers/gadget-controller';
 import verifyJwtToken from '../../middlewares/auth-middleware';
 
@@ -62,5 +63,13 @@ router.patch(
  * This endpoint allows an authenticated user to mark a gadget as 'Decommissioned'.
  */
 router.delete('/:id', validate(idParamSchema, 'params'), decommissionGadget);
+
+/**
+ * @route POST /api/v1/gadgets/:id/self-destruct
+ * @description Defines the route for triggering a gadget's self-destruct sequence.
+ * This endpoint allows an authenticated user to mark a gadget as 'Destroyed' and
+ * receives a confirmation code. This is an irreversible action.
+ */
+router.post('/:id/self-destruct', validate(idParamSchema, 'params'), selfDestructGadget);
 
 export default router;

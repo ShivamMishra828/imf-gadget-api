@@ -165,3 +165,43 @@ export async function decommissionGadget(
         next(error);
     }
 }
+
+/**
+ * @async
+ * @function selfDestructGadget
+ * @description Handles the API request to initiate a self-destruct sequence for a gadget by its ID.
+ * This operation changes the gadget's status to 'Destroyed' and returns a confirmation code.
+ * It extracts the gadget ID from URL parameters and delegates the logic to `GadgetService`.
+ *
+ * @param {Request} req - The Express request object, containing URL parameters (`id`).
+ * @param {Response} res - The Express response object, used to send the API response.
+ * @param {NextFunction} next - The Express next middleware function, used to pass errors to the global error handler.
+ * @returns {Promise<void>} A Promise that resolves when the response is sent or error is passed.
+ */
+export async function selfDestructGadget(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> {
+    try {
+        // Extract the gadget ID from URL parameters.
+        const { id } = req.params;
+
+        // Delegate the self-destruct business logic to the GadgetService.
+        const result = await gadgetService.triggerSelfDestruct(id);
+
+        // If self-destruct is successful, send a 200 OK status code with a success response.
+        res.status(StatusCodes.OK).json(
+            new SuccessResponse(result, 'Gadget self-destruct sequence initiated successfully.'),
+        );
+    } catch (error) {
+        // If an error occurs during the self-destruct process,
+        logger.error(
+            `[Gadget-Controller] Failed to self-destruct gadget with ID '${req.params.id}':`,
+            error,
+        );
+
+        // Pass the error to the next error-handling middleware.
+        next(error);
+    }
+}

@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import ServerConfig from '../config/server-config';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
+import otpGenerator from 'otp-generator';
 
 /**
  * @function hashPassword
@@ -55,4 +56,18 @@ export function generateUniqueNames(): string {
         style: 'capital',
         length: 2,
     })}`;
+}
+
+/**
+ * @function generateConfirmationCode
+ * @description Generates a 6-digit numeric confirmation code.
+ * This is useful for sensitive operations requiring a temporary, one-time code.
+ * @returns {string} A 6-character string composed of digits.
+ */
+export function generateConfirmationCode(): string {
+    return otpGenerator.generate(6, {
+        specialChars: false,
+        lowerCaseAlphabets: false,
+        upperCaseAlphabets: false,
+    });
 }
