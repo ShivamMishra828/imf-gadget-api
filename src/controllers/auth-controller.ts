@@ -47,3 +47,45 @@ export async function signUp(req: Request, res: Response, next: NextFunction): P
         next(error);
     }
 }
+
+/**
+ * @async
+ * @function signIn
+ * @description Handles the user sign-in (login) API request.
+ * This controller function receives login credentials, delegates authentication to the `UserService`,
+ * sets a JWT in an HTTP-only cookie, and sends an appropriate HTTP response.
+ *
+ * @param {Request} req - The Express request object, containing the request body (email, password).
+ * @param {Response} res - The Express response object, used to send the API response and set cookies.
+ * @param {NextFunction} next - The Express next middleware function, used to pass errors to the global error handler.
+ * @returns {Promise<void>} A Promise that resolves when the response is sent or error is passed.
+ */
+export async function signIn(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        // Destructure email and password from the request body.
+        const { email, password } = req.body;
+
+        // Delegate the sign-in business logic to the UserService.
+        const { user, token } = await userService.signIn({ email, password });
+
+        // Set the JWT in an HTTP-only cookie.
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 3600000,
+        })
+            // Send a 200 OK status code with a success response.
+            .status(StatusCodes.OK)
+            .json(new SuccessResponse({ user, token }, 'User successfully logged in'));
+    } catch (error) {
+        // If an error occurs during the sign-in process (e.g., invalid credentials, unexpected server error),
+        logger.error(
+            `[Auth-Controller] Error during user sign-in for email '${req.body.email}':`,
+            error,
+        );
+
+        // Pass the error to the next error-handling middleware.
+        next(error);
+    }
+}
