@@ -50,12 +50,7 @@ router.get('/', validate(getAllGadgetsSchema, 'query'), getAllGadgets);
  * @description Defines the route for partially updating an existing gadget by its ID.
  * This endpoint allows an authenticated user to modify specific fields of a gadget.
  */
-router.patch(
-    '/:id',
-    validate(updateGadgetSchema, 'params'),
-    validate(updateGadgetSchema, 'body'),
-    updateGadget,
-);
+router.patch('/:id', validate(updateGadgetSchema, 'params'), updateGadget);
 
 /**
  * @route DELETE /api/v1/gadgets/:id

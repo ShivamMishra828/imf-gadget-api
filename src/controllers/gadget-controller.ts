@@ -34,7 +34,7 @@ export async function createGadget(req: Request, res: Response, next: NextFuncti
 
         // If gadget creation is successful, send a 201 Created status code with a success response.
         res.status(StatusCodes.CREATED).json(
-            new SuccessResponse(gadget, 'Gadget created successfully.'), // Adjusted message for more clarity
+            new SuccessResponse(gadget, 'Gadget created successfully.'),
         );
     } catch (error) {
         // If an error occurs during the gadget creation process, log the error and pass it to the global error handler.
@@ -108,7 +108,7 @@ export async function updateGadget(req: Request, res: Response, next: NextFuncti
         // Extract the update fields from the request body.
         const updates = req.body;
 
-        // Delegate the gadget update business logic to the GadgetService.logger.info(`[Gadget-Controller] Update gadget request received for ID: '${id}'. Updates: ${JSON.stringify(updates)}`);
+        // Delegate the gadget update business logic to the Gadget Repository
         const gadget = await gadgetService.updateGadget(id, updates);
 
         // If the gadget is successfully updated, send a 200 OK status code with a success response.

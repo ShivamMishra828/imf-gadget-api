@@ -15,6 +15,20 @@ let server: http.Server | null = null;
  * error handling for the server startup process. It's the entry point for the application.
  */
 async function startServer(): Promise<void> {
+    // This explicit connection ensures that any database connectivity issues
+    try {
+        await prisma.$connect();
+        logger.info('[SERVER] Prisma client successfully connected to the database.');
+    } catch (dbError: any) {
+        // Catch any error during database connection
+        logger.error(
+            '[SERVER] Critical error: Failed to connect Prisma to the database on startup. Exiting...',
+            dbError,
+        );
+        // If the database connection fails, the application cannot function. Exit the process.
+        process.exit(1);
+    }
+
     // Start the Express application, making it listen for incoming requests on the configured port.
     server = app.listen(ServerConfig.PORT, (): void => {
         logger.info(
@@ -42,10 +56,14 @@ async function startServer(): Promise<void> {
 async function shutdownServer(signal?: string): Promise<void> {
     logger.info(`[SERVER] Initiating server shutdown. Received signal: ${signal || 'N/A'}`);
 
-    // Disconnect Prisma client from the database to ensure all pending operations are completed
-    logger.info('[SERVER] Disconnecting Prisma Database Connection...');
-    await prisma.$disconnect();
-    logger.info('[SERVER] Prisma Database Connection disconnected.');
+    // This closes any open database connections managed by Prisma.
+    try {
+        await prisma.$disconnect();
+        logger.info('[SERVER] Prisma client successfully disconnected from the database.');
+    } catch (dbError: any) {
+        logger.error('[SERVER] Error disconnecting Prisma client during shutdown:', dbError);
+        // Log the error but do not exit here, allow the HTTP server to close first.
+    }
 
     // Check if the server instance exists (i.e., if the server was successfully started).
     if (server) {
