@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+    # PostgreSQL Database Service
+    db:
+        image: postgres:15 # Use a PostgreSQL image
+        restart: always # Keep the database container running
+        environment:
+            POSTGRES_DB: ${DB_NAME} # Database name
+            POSTGRES_USER: ${DB_USER} # Database user
+            POSTGRES_PASSWORD: ${DB_PASSWORD} # Database password
+        ports:
+            - '${DB_PORT}:5432' # Map host port 5432 to container port 5432
+        volumes:
+            # Persist database data to a named volume to avoid data loss
+            - db_data:/var/lib/postgresql/data
+
+    # Node.js Application Service
+    app:
+        build:
+            context: . # Build the image from the current directory using your Dockerfile
+        restart: always # Keep the app container running
+        ports:
+            - '${PORT}:3000' # Map host port 3000 to container port 3000 (your app's port)
+        environment:
+            # Pass environment variables to the application container.
+            # 'db' here refers to the PostgreSQL service defined above.
+            DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:${DB_PORT}/${DB_NAME}?schema=public
+            JWT_SECRET: ${JWT_SECRET}
+            CORS_ORIGIN: ${CORS_ORIGIN}
+            LOG_LEVEL: ${LOG_LEVEL}
+            NODE_ENV: development
+            PORT: 3000
+        depends_on:
+            - db # Ensures the 'db' service starts before 'app'
+        # Command to run within the 'app' container.
+        # It first applies Prisma migrations and then starts your Node.js application.
+        command: >
+            sh -c "npx prisma migrate deploy && node dist/index.js"
+
+# Docker Volumes for data persistence
+volumes:
+    db_data: # Define the named volume for PostgreSQL data
